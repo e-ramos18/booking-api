@@ -34,6 +34,36 @@ const verifyJwt = (req, res, next) => {
   })
 }
 
+// refreshes token
+router.get('/token', async (req, res)=>{
+  const refreshToken = req.body.accessToken
+  if(!refreshToken) return res.sendStatus(401)
+  
+  // if(!req.body.refreshTokens.includes(refreshToken)) return res.sendStatus(403)
+  jwt.verify(refreshToken, process.env.refresh_key_token, (err, user)=>{
+      if(err) return res.json({message: err})
+      const accessToken = generateAccessToken({user: user})
+      res.json({accessToken: accessToken})
+  })
+});
+
+// refreshes token
+router.get('/isUserAuth', verifyJwt, async (req, res)=>{
+  res.status(200).send("authenticated!")
+});
+
+router.get('/user', async (req, res)=>{
+  if(req.query.token === null){
+      return res.status(204).json({msg: "No token received"})
+  } else {
+    jwt.verify(req.query.token, process.env.access_key_token, (err, jwtRes)=>{
+        if(err) res.status(403).json(err)
+        if (!jwtRes.user) res.status(401).json({msg: "No User found."});
+        res.status(200).json({user: jwtRes.user || null});
+    })
+  }
+})
+
 // register user
 router.post('/register', async (req, res) => {
   const { email, password, role } = req.body;
