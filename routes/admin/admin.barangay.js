@@ -1,8 +1,7 @@
 const express = require('express');
 const db = require('../../config/db-config');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const moment = require('moment');
 
 /* 
 ==========================
@@ -10,7 +9,7 @@ const bcrypt = require('bcryptjs');
 ==========================
 */
 // GET barangays
-router.get('/barangay', async (req, res) => {
+router.get('/', async (req, res) => {
   /* 
     search: string
     limit: number
@@ -39,7 +38,7 @@ router.get('/barangay', async (req, res) => {
 })
 
 // GET one barangay
-router.get('/barangay/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
   let sql = `SELECT * FROM barangay WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {
@@ -51,13 +50,42 @@ router.get('/barangay/:id', async (req, res) => {
   })
 })
 
+// CREATE one barangay
+router.post('/', async (req, res) => {
+  const name = req.body.name
+  const address = req.body.address
+  const created_at = moment(Date.now()).format('YYYY-MM-DD');
+  const updated_at = moment(Date.now()).format('YYYY-MM-DD');
+
+  let sql = `INSERT INTO barangay (name, address, created_at, updated_at) VALUES ("${name}", "${address}", "${created_at}", "${updated_at}")`
+  
+  db.query(sql, (err, results, fields) => {
+    if(err){
+      res.send(err).status(403)
+    }else{
+      db.query(`SELECT * FROM barangay WHERE id=${results.insertId}`, (error, result, fields) => {
+        if(err){
+          res.send(error).status(403)
+        } else {
+          res.status(200).json({
+            message: "CREATE_SUCCESS",
+            barangay: result[0]
+          })
+        }
+      })
+    }
+  })
+})
+
+
 // EDIT one barangay
-router.put('/barangay/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
   const id = req.params.id
   const name = req.body.name
   const address = req.body.address
+  const updated_at = moment(Date.now()).format('YYYY-MM-DD');
 
-  let sql = `UPDATE barangay SET name="${name}", address="${address}" WHERE id=${id}`
+  let sql = `UPDATE barangay SET name="${name}", address="${address}", updated_at="${updated_at}" WHERE id=${id}`
   
   db.query(sql, (err, results, fields) => {
     if(err){
@@ -78,7 +106,7 @@ router.put('/barangay/:id', async (req, res) => {
 })
 
 // DELETE one barangay
-router.delete('/barangay/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
   let sql = `DELETE FROM barangay WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {
