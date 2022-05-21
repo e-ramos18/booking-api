@@ -11,6 +11,7 @@ db.connect((err) => {
 });
 
 app.use('/api/auth', require('./controllers/auth'));
+app.use('/api/admin', require('./routes/admin/admin.barangay'));
 
 app.listen(
   PORT,
