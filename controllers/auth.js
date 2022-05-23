@@ -67,15 +67,18 @@ router.get('/user', async (req, res)=>{
 // register user
 router.post('/register', async (req, res) => {
   const { email, password, role } = req.body;
+  console.log({ email });
   if (!email || !password || !role) res.json({ status: 'error',  error: 'Please enter email, password and role.' });
   else {
     db.query('SELECT email from users WHERE email = ?', [email], async (err, result) => {
+      console.log({ result });
       if (err) throw err;
       if (result[0]) return res.json({ status: 'err', error: 'Email has already been registered'});
       else {
         const Hpassword = bcrypt.hashSync(req.body.password, salt)
-        db.query('INSERT INTO users SET ?', { email: email, password: Hpassword, role: role, createdAt: new Date(Date.now()), updatedAt: new Date(Date.now()) }, (error, results) => {
+        db.query('INSERT INTO users SET ?', { email: email, password: Hpassword, role: role }, (error, results) => {
           if (err) throw err;
+          console.log({ results })
           return res.json({ status: 'success', error: 'User has been registered'});
         });
       }
