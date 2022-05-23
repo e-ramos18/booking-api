@@ -78,7 +78,6 @@ router.post('/register', async (req, res) => {
         const Hpassword = bcrypt.hashSync(req.body.password, salt)
         db.query('INSERT INTO users SET ?', { email: email, password: Hpassword, role: role }, (error, results) => {
           if (err) throw err;
-          console.log({ results })
           return res.json({ status: 'success', error: 'User has been registered'});
         });
       }

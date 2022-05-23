@@ -55,7 +55,7 @@ router.post('/', async (req, res) => {
   const name = req.body.name
   const address = req.body.address
 
-  let sql = `INSERT INTO barangay (name, address, created_at, updated_at) VALUES ("${name}", "${address}")`
+  let sql = `INSERT INTO barangay (name, address) VALUES ("${name}", "${address}")`
   
   db.query(sql, (err, results, fields) => {
     if(err){
