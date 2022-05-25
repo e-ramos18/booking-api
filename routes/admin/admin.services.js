@@ -2,7 +2,7 @@ const express = require('express');
 const db = require('../../config/db-config');
 const router = express.Router();
 const moment = require('moment');
-const { protect } = require('../../middleware/auth');
+const { protect, authorize } = require('../../middleware/auth');
 
 /* 
 ==========================
@@ -52,7 +52,7 @@ router.get('/:id', protect, async (req, res) => {
 })
 
 // CREATE one services
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, authorize('admin'), async (req, res) => {
   const name = req.body.name
   const description = req.body.description
 
@@ -77,7 +77,7 @@ router.post('/', protect, async (req, res) => {
 })
 
 // EDIT one service
-router.put('/:id', protect, async (req, res) => {
+router.put('/:id', protect, authorize('admin'), async (req, res) => {
   const id = req.params.id
   const name = req.body.name
   const description = req.body.description
@@ -104,7 +104,7 @@ router.put('/:id', protect, async (req, res) => {
 })
 
 // DELETE one services
-router.delete('/:id', protect, async (req, res) => {
+router.delete('/:id', protect, authorize('admin'), async (req, res) => {
   let sql = `DELETE FROM services WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {

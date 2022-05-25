@@ -42,3 +42,18 @@ exports.protect = asyncHandler(async (req, res, next) => {
     );
   }
 });
+
+//Grant access to specific roles
+exports.authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        res.status(403).json({
+          auth: false,
+          message:  `Role ${req.user.role} is not authorized to access this route`,
+        })
+      );
+    }
+    next();
+  };
+};

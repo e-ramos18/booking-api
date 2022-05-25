@@ -35,7 +35,7 @@ router.get('/refresh-token', protect, async (req, res)=>{
 
 router.get('/getMe', protect, async (req, res)=>{
   if (!req.user) return next();
-  db.query('SELECT id, email role, created_at, updated_at FROM users WHERE id = ?', [req.user.id], async (err, result) => {
+  db.query('SELECT id, email, role, created_at, updated_at FROM users WHERE id = ?', [req.user.id], async (err, result) => {
     if (err) throw err;
     res.status(200).json({
       success: true,
@@ -95,6 +95,8 @@ router.post('/login', async (req, res) => {
           else {
             const accessToken = generateAccessToken({user: user})
             const refreshToken = generateRefreshToken({user: user})
+
+            delete user.password;
 
             res.json({
                 auth: true,
