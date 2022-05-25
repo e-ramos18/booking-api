@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../../config/db-config');
 const router = express.Router();
 const moment = require('moment');
+const { protect } = require('../../middleware/auth');
 
 /* 
 ==========================
@@ -9,7 +10,7 @@ const moment = require('moment');
 ==========================
 */
 // GET barangays
-router.get('/', async (req, res) => {
+router.get('/', protect, async (req, res) => {
   /* 
     search: string
     limit: number
@@ -38,7 +39,7 @@ router.get('/', async (req, res) => {
 })
 
 // GET one barangay
-router.get('/:id', async (req, res) => {
+router.get('/:id', protect, async (req, res) => {
   let sql = `SELECT * FROM barangay WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {
@@ -51,7 +52,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // CREATE one barangay
-router.post('/', async (req, res) => {
+router.post('/', protect, async (req, res) => {
   const name = req.body.name
   const address = req.body.address
 
@@ -77,7 +78,7 @@ router.post('/', async (req, res) => {
 
 
 // EDIT one barangay
-router.put('/:id', async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   const id = req.params.id
   const name = req.body.name
   const address = req.body.address
@@ -104,7 +105,7 @@ router.put('/:id', async (req, res) => {
 })
 
 // DELETE one barangay
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   let sql = `DELETE FROM barangay WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {

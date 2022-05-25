@@ -13,7 +13,7 @@ db.connect((err) => {
 });
 
 app.use('/api/auth', require('./controllers/auth'));
-app.use('/api/admin/barangay', require('./routes/admin/admin.barangay'));
+app.use('/api/admin/barangays', require('./routes/admin/admin.barangay'));
 app.use('/api/admin/services', require('./routes/admin/admin.services'));
 
 app.listen(

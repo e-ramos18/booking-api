@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../../config/db-config');
 const router = express.Router();
 const moment = require('moment');
+const { protect } = require('../../middleware/auth');
 
 /* 
 ==========================
@@ -9,7 +10,7 @@ const moment = require('moment');
 ==========================
 */
 // GET services
-router.get('/', async (req, res) => {
+router.get('/', protect, async (req, res) => {
   /* 
     search: string
     limit: number
@@ -38,20 +39,20 @@ router.get('/', async (req, res) => {
 })
 
 // GET one service
-router.get('/:id', async (req, res) => {
+router.get('/:id', protect, async (req, res) => {
   let sql = `SELECT * FROM services WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {
       if(err){
           res.send(err).status(403)
       }else{
-          res.json(results).status(200)
+          res.json(results[0]).status(200)
       }
   })
 })
 
 // CREATE one services
-router.post('/', async (req, res) => {
+router.post('/', protect, async (req, res) => {
   const name = req.body.name
   const description = req.body.description
 
@@ -76,7 +77,7 @@ router.post('/', async (req, res) => {
 })
 
 // EDIT one service
-router.put('/:id', async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   const id = req.params.id
   const name = req.body.name
   const description = req.body.description
@@ -103,7 +104,7 @@ router.put('/:id', async (req, res) => {
 })
 
 // DELETE one services
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   let sql = `DELETE FROM services WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {
