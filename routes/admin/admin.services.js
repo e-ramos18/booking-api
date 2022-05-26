@@ -51,7 +51,7 @@ router.get('/:id', protect, async (req, res) => {
   })
 })
 
-// CREATE one services
+// CREATE one service
 router.post('/', protect, authorize('admin'), async (req, res) => {
   const name = req.body.name
   const description = req.body.description
