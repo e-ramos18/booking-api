@@ -1,4 +1,5 @@
 const express = require('express');
+const moment = require('moment');
 const db = require('../config/db-config');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
@@ -98,6 +99,8 @@ router.post('/login', async (req, res) => {
 
             delete user.password;
 
+            req.user = user;
+
             res.json({
                 auth: true,
                 message: "Successfully logged-in!",
@@ -110,6 +113,42 @@ router.post('/login', async (req, res) => {
     }
   }) 
 });
+
+// update password
+router.put('/update-password', protect, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) res.json({ status: 'error',  error: 'Both current and new password are needed.' });
+  else {
+    console.log({ user: req.user });
+    const user = req.user
+    if(!await bcrypt.compare(currentPassword, user.password)) {
+      return res.send({ message: "Invalid password!" }).status(400);
+    } else {
+      const updated_at = moment(Date.now()).format('YYYY-MM-DD');
+
+      let sql = `UPDATE users SET password="${newPassword}", updated_at="${updated_at}" WHERE id=${user.id}`
+      
+      db.query(sql, (err, results, fields) => {
+        if(err){
+          return res.send(err).status(400)
+        }else{
+          db.query(`SELECT * FROM users WHERE id=${user.id}`, (error, result, fields) => {
+            if(err){
+              return res.send(error).status(400)
+            } else {
+              const user = result[0];
+              delete user.password;
+              res.status(200).json({
+                message: "SUCCESS",
+                data: result[0]
+              })
+            }
+          })
+        }
+      })
+    }
+  }
+})
 
 
 
