@@ -33,7 +33,11 @@ router.get('/', protect, async (req, res) => {
     if(err){
         res.send(err).status(403)
     }else{
-        res.json(results).status(200)
+        res.status(200).json({
+          message: "SUCCESS",
+          data: results,
+          total: results.length
+        })
     }
   })
 })
@@ -46,7 +50,10 @@ router.get('/:id', protect, async (req, res) => {
       if(err){
           res.send(err).status(403)
       }else{
-          res.json(results).status(200)
+          res.status(200).json({
+            message: "SUCCESS",
+            data: results[0]
+          })
       }
   })
 })
@@ -67,8 +74,8 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
           res.send(error).status(400)
         } else {
           res.status(201).json({
-            message: "CREATE_SUCCESS",
-            barangay: result[0]
+            message: "SUCCESS",
+            data: result[0]
           })
         }
       })
@@ -95,8 +102,8 @@ router.put('/:id', protect, authorize('admin'), async (req, res) => {
           res.send(error).status(403)
         } else {
           res.status(200).json({
-            message: "EDIT_SUCCESS",
-            barangay: result[0]
+            message: "SUCCESS",
+            data: result[0]
           })
         }
       })
@@ -113,8 +120,7 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
           res.send(err).status(403)
       } else {
         res.status(200).json({
-          message: "DELETE_SUCCESS",
-          barangay: {}
+          message: "SUCCESS"
         })
       }
   })
