@@ -31,7 +31,7 @@ router.get('/', protect, async (req, res) => {
   
   db.query(sql, (err, results, fields) => {
     if(err){
-        res.send(err).status(403)
+      return res.send(err).status(403)
     }else{
         res.status(200).json({
           message: "SUCCESS",
@@ -48,7 +48,7 @@ router.get('/:id', protect, async (req, res) => {
   
   db.query(sql, (err, results, fields) => {
       if(err){
-          res.send(err).status(403)
+        return res.send(err).status(403)
       }else{
           res.status(200).json({
             message: "SUCCESS",
@@ -67,7 +67,7 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
   
   db.query(sql, (err, results, fields) => {
     if(err){
-      res.send(err).status(400)
+      return res.send(err).status(400)
     }else{
       db.query(`SELECT * FROM services WHERE id=${results.insertId}`, (error, result, fields) => {
         if(error){
@@ -94,11 +94,11 @@ router.put('/:id', protect, authorize('admin'), async (req, res) => {
   
   db.query(sql, (err, results, fields) => {
     if(err){
-      res.send(err).status(403)
+      return res.send(err).status(403)
     }else{
       db.query(`SELECT * FROM services WHERE id=${id}`, (error, result, fields) => {
         if(err){
-          res.send(error).status(403)
+          return res.send(error).status(403)
         } else {
           res.status(200).json({
             message: "SUCCESS",
@@ -116,7 +116,7 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
   
   db.query(sql, (err, results, fields) => {
       if(err){
-          res.send(err).status(403)
+        return res.send(err).status(403)
       } else {
         res.status(200).json({
           message: "SUCCESS"
