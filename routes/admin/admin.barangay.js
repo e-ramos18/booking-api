@@ -59,7 +59,7 @@ router.get('/:id', protect, async (req, res) => {
 })
 
 // CREATE one barangay
-router.post('/', protect, authorize('admin'), async (req, res) => {
+router.post('/', protect, authorize('ADMIN'), async (req, res) => {
   const name = req.body.name
   const address = req.body.address
 
@@ -85,11 +85,11 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
 
 
 // EDIT one barangay
-router.put('/:id', protect, authorize('admin'), async (req, res) => {
+router.put('/:id', protect, authorize('ADMIN'), async (req, res) => {
   const id = req.params.id
   const name = req.body.name
   const address = req.body.address
-  const updated_at = moment(Date.now()).format('YYYY-MM-DD');
+  const updated_at = moment(Date.now()).format('YYYY-MM-DD HH:mm');
 
   let sql = `UPDATE barangay SET name="${name}", address="${address}", updated_at="${updated_at}" WHERE id=${id}`
   
@@ -112,7 +112,7 @@ router.put('/:id', protect, authorize('admin'), async (req, res) => {
 })
 
 // DELETE one barangay
-router.delete('/:id', protect, authorize('admin'), async (req, res) => {
+router.delete('/:id', protect, authorize('ADMIN'), async (req, res) => {
   let sql = `DELETE FROM barangay WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {

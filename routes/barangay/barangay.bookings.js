@@ -1,15 +1,19 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const db = require('../../config/db-config');
 const router = express.Router();
 const moment = require('moment');
 const { protect, authorize } = require('../../middleware/auth');
+const sendEmail = require('../../utils/sendEmail');
+
 
 /* 
 ==========================
-    SERVICES
+    BOOKINGS
 ==========================
 */
-// GET services
+
+// get bookings
 router.get('/', protect, async (req, res) => {
   /* 
     search: string
@@ -17,8 +21,8 @@ router.get('/', protect, async (req, res) => {
     page: number
     sort: string EX: (id || name)s
   */
-  let sql = `SELECT * FROM services `
-  req.query.search ? sql += `WHERE (name LIKE '%${req.query.search}%' OR description LIKE '%${req.query.search}%') `:null
+  let sql = `SELECT * FROM bookings `
+  req.query.search ? sql += `WHERE (client_name LIKE '%${req.query.search}%' OR client_email LIKE '%${req.query.search}%') `:null
 
   if (req.query.sort) {
     sql += `ORDER BY ${req.query.sort} DESC `
@@ -42,9 +46,26 @@ router.get('/', protect, async (req, res) => {
   })
 })
 
-// GET one service
+// get bookings by a service staff
+router.get('/service-staff/:serviceStaffId', protect, async (req, res) => {
+  let sql = `SELECT * FROM bookings WHERE service_staff_id=${req.params.serviceStaffId}`
+  
+  db.query(sql, (err, results, fields) => {
+    if(err){
+      return res.send(err).status(403)
+    }else{
+        res.status(200).json({
+          message: "SUCCESS",
+          data: results,
+          total: results.length
+        })
+    }
+  })
+})
+
+// GET one booking
 router.get('/:id', protect, async (req, res) => {
-  let sql = `SELECT * FROM services WHERE id=${req.params.id}`
+  let sql = `SELECT * FROM bookings WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {
       if(err){
@@ -58,18 +79,27 @@ router.get('/:id', protect, async (req, res) => {
   })
 })
 
-// CREATE one service
-router.post('/', protect, authorize('ADMIN'), async (req, res) => {
-  const name = req.body.name
-  const description = req.body.description
+// CREATE booking
+router.post('/', protect, authorize('BARANGAY'), async (req, res) => {
+  const {
+    serviceId,
+    barangayId,
+    schedId,
+    serviceStaffId,
+    clientName,
+    clientContact,
+    clientEmail
+  } = req.body;
 
-  let sql = `INSERT INTO services (name, description) VALUES ("${name}", "${description}")`
+  const bookedBy = req.user.id;
+
+  let sql = `INSERT INTO bookings (service_id, barangay_id, sched_id, booked_by, service_staff_id, client_name, client_contact, client_email) VALUES (${serviceId}, ${barangayId}, ${schedId}, ${bookedBy}, ${serviceStaffId}, "${clientName}", "${clientContact}", "${clientEmail}")`
   
   db.query(sql, (err, results, fields) => {
     if(err){
       return res.send(err).status(400)
     }else{
-      db.query(`SELECT * FROM services WHERE id=${results.insertId}`, (error, result, fields) => {
+      db.query(`SELECT * FROM bookings WHERE id=${results.insertId}`, (error, result, fields) => {
         if(error){
           res.send(error).status(400)
         } else {
@@ -83,20 +113,23 @@ router.post('/', protect, authorize('ADMIN'), async (req, res) => {
   })
 })
 
-// EDIT one service
-router.put('/:id', protect, authorize('ADMIN'), async (req, res) => {
+// EDIT one BOOKING
+router.put('/:id', protect, authorize('BARANGAY'), async (req, res) => {
   const id = req.params.id
-  const name = req.body.name
-  const description = req.body.description
+  const { 
+    clientName,
+    clientContact,
+    clientEmail
+  } = req.body;
   const updated_at = moment(Date.now()).format('YYYY-MM-DD HH:mm');
 
-  let sql = `UPDATE services SET name="${name}", description="${description}", updated_at="${updated_at}" WHERE id=${id}`
+  let sql = `UPDATE bookings SET client_name="${clientName}", client_contact="${clientContact}", client_email="${clientEmail}", updated_at="${updated_at}" WHERE id=${id}`
   
   db.query(sql, (err, results, fields) => {
     if(err){
       return res.send(err).status(403)
     }else{
-      db.query(`SELECT * FROM services WHERE id=${id}`, (error, result, fields) => {
+      db.query(`SELECT * FROM bookings WHERE id=${id}`, (error, result, fields) => {
         if(err){
           return res.send(error).status(403)
         } else {
@@ -110,9 +143,9 @@ router.put('/:id', protect, authorize('ADMIN'), async (req, res) => {
   })
 })
 
-// DELETE one services
-router.delete('/:id', protect, authorize('ADMIN'), async (req, res) => {
-  let sql = `DELETE FROM services WHERE id=${req.params.id}`
+// DELETE one booking
+router.delete('/:id', protect, authorize('BARANGAY'), async (req, res) => {
+  let sql = `DELETE FROM bookings WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {
       if(err){
@@ -124,5 +157,6 @@ router.delete('/:id', protect, authorize('ADMIN'), async (req, res) => {
       }
   })
 })
+
 
 module.exports = router

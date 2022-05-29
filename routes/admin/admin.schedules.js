@@ -6,10 +6,11 @@ const { protect, authorize } = require('../../middleware/auth');
 
 /* 
 ==========================
-    SERVICES
+    SCHEDULES
 ==========================
 */
-// GET services
+
+// get schedules
 router.get('/', protect, async (req, res) => {
   /* 
     search: string
@@ -17,8 +18,8 @@ router.get('/', protect, async (req, res) => {
     page: number
     sort: string EX: (id || name)s
   */
-  let sql = `SELECT * FROM services `
-  req.query.search ? sql += `WHERE (name LIKE '%${req.query.search}%' OR description LIKE '%${req.query.search}%') `:null
+  let sql = `SELECT * FROM schedules `
+  req.query.search ? sql += `WHERE sched_date LIKE '%${req.query.search}%'`:null
 
   if (req.query.sort) {
     sql += `ORDER BY ${req.query.sort} DESC `
@@ -42,9 +43,9 @@ router.get('/', protect, async (req, res) => {
   })
 })
 
-// GET one service
+// GET one schedule
 router.get('/:id', protect, async (req, res) => {
-  let sql = `SELECT * FROM services WHERE id=${req.params.id}`
+  let sql = `SELECT * FROM schedules WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {
       if(err){
@@ -58,18 +59,23 @@ router.get('/:id', protect, async (req, res) => {
   })
 })
 
-// CREATE one service
+// CREATE schedule
 router.post('/', protect, authorize('ADMIN'), async (req, res) => {
-  const name = req.body.name
-  const description = req.body.description
+  const { 
+    serviceId,
+    userId,
+    schedDate,
+    startTime,
+    endTime
+  } = req.body;
 
-  let sql = `INSERT INTO services (name, description) VALUES ("${name}", "${description}")`
+  let sql = `INSERT INTO schedules (service_id, user_id, sched_date, start_time, end_time, is_available) VALUES (${serviceId}, ${userId}, "${schedDate}", "${startTime}", "${endTime}",${true})`
   
   db.query(sql, (err, results, fields) => {
     if(err){
       return res.send(err).status(400)
     }else{
-      db.query(`SELECT * FROM services WHERE id=${results.insertId}`, (error, result, fields) => {
+      db.query(`SELECT * FROM schedules WHERE id=${results.insertId}`, (error, result, fields) => {
         if(error){
           res.send(error).status(400)
         } else {
@@ -83,20 +89,23 @@ router.post('/', protect, authorize('ADMIN'), async (req, res) => {
   })
 })
 
-// EDIT one service
+// EDIT one schedule
 router.put('/:id', protect, authorize('ADMIN'), async (req, res) => {
   const id = req.params.id
-  const name = req.body.name
-  const description = req.body.description
+  const { 
+    schedDate,
+    startTime,
+    endTime
+  } = req.body;
   const updated_at = moment(Date.now()).format('YYYY-MM-DD HH:mm');
 
-  let sql = `UPDATE services SET name="${name}", description="${description}", updated_at="${updated_at}" WHERE id=${id}`
+  let sql = `UPDATE schedules SET sched_date="${schedDate}", start_time="${startTime}", end_time="${endTime}", updated_at="${updated_at}" WHERE id=${id}`
   
   db.query(sql, (err, results, fields) => {
     if(err){
       return res.send(err).status(403)
     }else{
-      db.query(`SELECT * FROM services WHERE id=${id}`, (error, result, fields) => {
+      db.query(`SELECT * FROM schedules WHERE id=${id}`, (error, result, fields) => {
         if(err){
           return res.send(error).status(403)
         } else {
@@ -110,9 +119,9 @@ router.put('/:id', protect, authorize('ADMIN'), async (req, res) => {
   })
 })
 
-// DELETE one services
+// DELETE one schedule
 router.delete('/:id', protect, authorize('ADMIN'), async (req, res) => {
-  let sql = `DELETE FROM services WHERE id=${req.params.id}`
+  let sql = `DELETE FROM schedules WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {
       if(err){
@@ -124,5 +133,6 @@ router.delete('/:id', protect, authorize('ADMIN'), async (req, res) => {
       }
   })
 })
+
 
 module.exports = router

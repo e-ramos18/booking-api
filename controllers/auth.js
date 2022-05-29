@@ -119,7 +119,6 @@ router.put('/update-password', protect, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   if (!currentPassword || !newPassword) res.json({ status: 'error',  error: 'Both current and new password are needed.' });
   else {
-    console.log({ user: req.user });
     const user = req.user
     if(!await bcrypt.compare(currentPassword, user.password)) {
       return res.send({ message: "Invalid password!" }).status(400);

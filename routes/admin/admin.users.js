@@ -4,6 +4,7 @@ const db = require('../../config/db-config');
 const router = express.Router();
 const moment = require('moment');
 const { protect, authorize } = require('../../middleware/auth');
+const sendEmail = require('../../utils/sendEmail');
 // bcrypt settings
 const saltRounds = 10
 const salt = bcrypt.genSaltSync(saltRounds)
@@ -14,7 +15,7 @@ const salt = bcrypt.genSaltSync(saltRounds)
 ==========================
 */
 // GET USERS
-router.get('/', protect, authorize('admin'), async (req, res) => {
+router.get('/', protect, authorize('ADMIN'), async (req, res) => {
   /* 
     search: string
     limit: number
@@ -63,8 +64,8 @@ router.get('/:id', protect, async (req, res) => {
 })
 
 // CREATE one USER
-router.post('/', protect, authorize('admin'), async (req, res) => {
-  const password = '1234567';
+router.post('/', protect, authorize('ADMIN'), async (req, res) => {
+  const password = process.env.DEFAULT_PASSWORD || '1234567';
   const  {
     serviceId,
     barangayId,
@@ -103,14 +104,14 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
     }).status(400)
   }
 
-  if (barangayId && role === "BARANGAY" && (type !== null && type !== "BARANGAY_STAFF")) {
+  if (barangayId && role === "BARANGAY" && (type === null || type !== "BARANGAY_STAFF")) {
     return res.send({
       status: "BAD REQUEST",
       message: "Should be type BARANGAY_STAFF."
     }).status(400)
   }
 
-  if (serviceId !== null && role === "SERVICE" && (type !== null && type !== "SERVICE_STAFF")) {
+  if (serviceId !== null && role === "SERVICE" && (type === null || type !== "SERVICE_STAFF")) {
     return res.send({
       status: "BAD REQUEST",
       message: "Should be type SERVICE_STAFF."
@@ -126,7 +127,7 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
 
 
   const Hpassword = bcrypt.hashSync(password, salt)
-  let sql = `INSERT INTO users (service_id, barangay_id, email, full_name, password, role, contact, type) VALUES (${serviceId}, ${barangayId}, "${email}", "${fullName}", "${password}", "${role}", "${contact}", "${type}")`
+  let sql = `INSERT INTO users (service_id, barangay_id, email, full_name, password, role, contact, type) VALUES (${serviceId}, ${barangayId}, "${email}", "${fullName}", "${Hpassword}", "${role}", "${contact}", "${type}")`
 
   db.query('SELECT email from users WHERE email = ?', [email], async (err, result) => {
     if (err) {
@@ -146,17 +147,33 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
         if(err){
           return res.send(err).status(400)
         }else{
-          db.query(`SELECT * FROM users WHERE id=${results.insertId}`, (error, result, fields) => {
+          db.query(`SELECT * FROM users WHERE id=${results.insertId}`, async (error, result, fields) => {
             if(error){
               return res.send(error).status(400)
             } else {
               const user = result[0];
               delete user.password;
-              
-              return res.status(201).json({
-                message: "SUCCESS",
-                data: result[0]
-              })
+
+              const message = `You are recieving this email because you have been registered to ${process.env.SYSTEM_NAME}. \n\n This is your \n USERNAME: ${email} \n PASSWORD: ${password}`;
+
+              try {
+                await sendEmail({
+                  email: user.email,
+                  subject: `${process.env.SYSTEM_NAME} ACCOUNT`,
+                  message,
+                });
+            
+                return res.status(201).json({
+                  message: "SUCCESS",
+                  data: result[0]
+                })
+              } catch (err) {
+                return res.send({
+                  status: "ERROR",
+                  message: "Can't send an email.",
+                  error: err
+                }).status(400)
+              }
             }
           })
         }
@@ -172,7 +189,7 @@ router.put('/:id', protect, async (req, res) => {
     fullName,
     contact
   } = req.body;
-  const updated_at = moment(Date.now()).format('YYYY-MM-DD');
+  const updated_at = moment(Date.now()).format('YYYY-MM-DD HH:mm');
 
   let sql = `UPDATE users SET full_name="${fullName}", contact="${contact}", updated_at="${updated_at}" WHERE id=${id}`
   
@@ -197,7 +214,7 @@ router.put('/:id', protect, async (req, res) => {
 })
 
 // DELETE one user
-router.delete('/:id', protect, authorize('admin'), async (req, res) => {
+router.delete('/:id', protect, authorize('ADMIN'), async (req, res) => {
   let sql = `DELETE FROM users WHERE id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {
@@ -208,6 +225,51 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
           message: "SUCCESS"
         })
       }
+  })
+})
+
+// Reset a user password
+router.post('/reset-password/:id', protect, authorize('ADMIN'), async (req, res) => {
+  const id = req.params.id
+  const password = process.env.DEFAULT_PASSWORD || '1234567';
+  const Hpassword = bcrypt.hashSync(password, salt)
+  const updated_at = moment(Date.now()).format('YYYY-MM-DD HH:mm');
+  console.log({ updated_at });
+  let sql = `UPDATE users SET password="${Hpassword}", updated_at="${updated_at}" WHERE id=${id}`
+  
+  db.query(sql, (err, results, fields) => {
+    if(err){
+      return res.send(err).status(400)
+    }else{
+      db.query(`SELECT * FROM users WHERE id=${id}`, async (error, result, fields) => {
+        if(err){
+          return res.send(error).status(400)
+        } else {
+          const user = result[0];
+          delete user.password;
+          const message = `Your PASSWORD for ${process.env.SYSTEM_NAME} account has been reset to: \n PASSWORD: ${password}`;
+
+          try {
+            await sendEmail({
+              email: user.email,
+              subject: `${process.env.SYSTEM_NAME} ACCOUNT`,
+              message,
+            });
+        
+            return res.status(200).json({
+              message: "SUCCESS",
+              data: result[0]
+            })
+          } catch (err) {
+            return res.send({
+              status: "ERROR",
+              message: "Can't send an email.",
+              error: err
+            }).status(400)
+          }
+        }
+      })
+    }
   })
 })
 
