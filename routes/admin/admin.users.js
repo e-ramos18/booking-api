@@ -23,7 +23,7 @@ router.get('/', protect, authorize('ADMIN'), async (req, res) => {
     sort: string EX: (id || name)
   */
   let sql = `SELECT id, service_id, barangay_id, email, full_name, role, contact, type, created_at, updated_at FROM users `
-  req.query.search ? sql += `WHERE (full_name LIKE '%${req.query.search}% OR email LIKE '%${req.query.search}%)' `:null
+  req.query.search ? sql += `WHERE (full_name LIKE '%${req.query.search}%' OR email LIKE '%${req.query.search}%') `:null
 
   if (req.query.sort) {
     sql += `ORDER BY ${req.query.sort} DESC `
