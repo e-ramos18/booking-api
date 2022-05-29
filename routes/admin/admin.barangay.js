@@ -18,7 +18,7 @@ router.get('/', protect, async (req, res) => {
     sort: string EX: (id || name)
   */
   let sql = `SELECT * FROM barangay `
-  req.query.search ? sql += `WHERE (name LIKE '%${req.query.search}% OR address LIKE '%${req.query.search}%)' `:null
+  req.query.search ? sql += `WHERE (name LIKE '%${req.query.search}%' OR address LIKE '%${req.query.search}%') `:null
 
   if (req.query.sort) {
     sql += `ORDER BY ${req.query.sort} DESC `
