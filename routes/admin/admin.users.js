@@ -38,11 +38,18 @@ router.get('/', protect, authorize('ADMIN'), async (req, res) => {
     if(err){
         res.send(err).status(403)
     }else{
-        res.status(200).json({
-          message: "SUCCESS",
-          data: results,
-          total: results.length
-        })
+      db.query('SELECT * FROM users', (qErr, qResults, qFields) => {
+        if(qErr){
+          return res.send(qErr).status(400)
+        }else{
+          res.status(200).json({
+            message: "SUCCESS",
+            data: results,
+            results: results.length,
+            total: qResults.length
+          })
+        }
+      })
     }
   })
 })
