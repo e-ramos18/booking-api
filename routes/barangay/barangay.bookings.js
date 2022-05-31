@@ -37,6 +37,30 @@ router.get('/', protect, async (req, res) => {
     if(err){
       return res.send(err).status(403)
     }else{
+      db.query('SELECT * FROM bookings', (qErr, qResults, qFields) => {
+        if(qErr){
+          return res.send(qErr).status(400)
+        }else{
+          res.status(200).json({
+            message: "SUCCESS",
+            data: results,
+            results: results.length,
+            total: qResults.length
+          })
+        }
+      })
+    }
+  })
+})
+
+// get bookings by a service staff
+router.get('/service-staff/:id', protect, async (req, res) => {
+  let sql = `SELECT * FROM bookings WHERE service_staff_id=${req.params.id}`
+  
+  db.query(sql, (err, results, fields) => {
+    if(err){
+      return res.send(err).status(403)
+    }else{
         res.status(200).json({
           message: "SUCCESS",
           data: results,
@@ -46,9 +70,26 @@ router.get('/', protect, async (req, res) => {
   })
 })
 
-// get bookings by a service staff
-router.get('/service-staff/:serviceStaffId', protect, async (req, res) => {
-  let sql = `SELECT * FROM bookings WHERE service_staff_id=${req.params.serviceStaffId}`
+// get bookings by a barangay staff id
+router.get('/barangay-staff/:id', protect, async (req, res) => {
+  let sql = `SELECT * FROM bookings WHERE booked_by=${req.params.id}`
+  
+  db.query(sql, (err, results, fields) => {
+    if(err){
+      return res.send(err).status(403)
+    }else{
+        res.status(200).json({
+          message: "SUCCESS",
+          data: results,
+          total: results.length
+        })
+    }
+  })
+})
+
+// get bookings by a barangay staff
+router.get('/barangay/:id', protect, async (req, res) => {
+  let sql = `SELECT * FROM bookings WHERE barangay_id=${req.params.id}`
   
   db.query(sql, (err, results, fields) => {
     if(err){
