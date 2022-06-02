@@ -19,6 +19,7 @@ app.use('/api/admin/services', require('./routes/admin/admin.services'));
 app.use('/api/admin/users', require('./routes/admin/admin.users'));
 app.use('/api/admin/schedules', require('./routes/admin/admin.schedules'));
 app.use('/api/barangays/bookings', require('./routes/barangay/barangay.bookings'));
+app.use('/api/barangays/services', require('./routes/barangay/barangay.services'));
 
 app.listen(
   PORT,
