@@ -9,13 +9,14 @@ const sendEmail = require('../../utils/sendEmail');
 
 /* 
 ==========================
-    services
+    BOOKINGS of a service
 ==========================
 */
 
-// get users that are service staff
-router.get('/users', protect, async (req, res) => {
-  let sql = `SELECT *, "" as password FROM users INNER JOIN services ON users.service_id = services.id`
+// get bookings by a service
+router.get('/:serviceStaffId/bookings', protect, authorize('SERVICE'), async (req, res) => {
+  const serviceStaffId = req.params.serviceId
+  let sql = `SELECT * FROM bookings WHERE service_staff_id=${serviceStaffId}`
   
   db.query(sql, (err, results, fields) => {
     if(err){

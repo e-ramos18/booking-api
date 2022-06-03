@@ -55,39 +55,85 @@ router.get('/', protect, async (req, res) => {
 
 // get bookings by a service staff
 router.get('/service-staff/:id', protect, async (req, res) => {
-  let sql = `SELECT * FROM bookings WHERE service_staff_id=${req.params.id}`
+/* 
+  search: string
+  limit: number
+  page: number
+  sort: string EX: (id || name)s
+*/
+  let sql = `SELECT * FROM bookings WHERE service_staff_id=${req.params.id} `
+  req.query.search ? sql += `WHERE (client_name LIKE '%${req.query.search}%' OR client_email LIKE '%${req.query.search}%') `:null
+
+  if (req.query.sort) {
+    sql += `ORDER BY ${req.query.sort} DESC `
+  } else {
+    sql += `ORDER BY created_at DESC `
+  }
+
+  req.query.limit ?sql += `LIMIT ${req.query.limit} `:null
+  req.query.page ?sql += `OFFSET ${(req.query.page-1) * req.query.limit} `:null
   
   db.query(sql, (err, results, fields) => {
     if(err){
       return res.send(err).status(403)
     }else{
-        res.status(200).json({
-          message: "SUCCESS",
-          data: results,
-          total: results.length
-        })
+      db.query('SELECT * FROM bookings', (qErr, qResults, qFields) => {
+        if(qErr){
+          return res.send(qErr).status(400)
+        }else{
+          res.status(200).json({
+            message: "SUCCESS",
+            data: results,
+            results: results.length,
+            total: qResults.length
+          })
+        }
+      })
     }
   })
 })
 
 // get bookings by a barangay staff id
 router.get('/barangay-staff/:id', protect, async (req, res) => {
-  let sql = `SELECT * FROM bookings WHERE booked_by=${req.params.id}`
-  
+/* 
+  search: string
+  limit: number
+  page: number
+  sort: string EX: (id || name)s
+*/
+  let sql = `SELECT * FROM bookings WHERE booked_by=${req.params.id} `
+  req.query.search ? sql += `WHERE (client_name LIKE '%${req.query.search}%' OR client_email LIKE '%${req.query.search}%') `:null
+
+  if (req.query.sort) {
+    sql += `ORDER BY ${req.query.sort} DESC `
+  } else {
+    sql += `ORDER BY created_at DESC `
+  }
+
+  req.query.limit ?sql += `LIMIT ${req.query.limit} `:null
+  req.query.page ?sql += `OFFSET ${(req.query.page-1) * req.query.limit} `:null
+
   db.query(sql, (err, results, fields) => {
     if(err){
       return res.send(err).status(403)
     }else{
-        res.status(200).json({
-          message: "SUCCESS",
-          data: results,
-          total: results.length
-        })
+      db.query('SELECT * FROM bookings', (qErr, qResults, qFields) => {
+        if(qErr){
+          return res.send(qErr).status(400)
+        }else{
+          res.status(200).json({
+            message: "SUCCESS",
+            data: results,
+            results: results.length,
+            total: qResults.length
+          })
+        }
+      })
     }
   })
 })
 
-// get bookings by a barangay staff
+// get bookings by a barangay id
 router.get('/barangay/:id', protect, async (req, res) => {
   let sql = `SELECT * FROM bookings WHERE barangay_id=${req.params.id}`
   
@@ -95,11 +141,11 @@ router.get('/barangay/:id', protect, async (req, res) => {
     if(err){
       return res.send(err).status(403)
     }else{
-        res.status(200).json({
-          message: "SUCCESS",
-          data: results,
-          total: results.length
-        })
+      res.status(200).json({
+        message: "SUCCESS",
+        data: results,
+        total: results.length
+      })
     }
   })
 })
