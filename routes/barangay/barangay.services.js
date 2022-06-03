@@ -15,7 +15,7 @@ const sendEmail = require('../../utils/sendEmail');
 
 // get users that are service staff
 router.get('/users', protect, async (req, res) => {
-  let sql = `SELECT * FROM users INNER JOIN services ON users.service_id = services.id;`
+  let sql = `SELECT *, "" as password FROM users INNER JOIN services ON users.service_id = services.id;`
   
   db.query(sql, (err, results, fields) => {
     if(err){
