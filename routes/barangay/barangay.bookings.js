@@ -62,7 +62,7 @@ router.get('/service-staff/:id', protect, async (req, res) => {
   sort: string EX: (id || name)s
 */
   let sql = `SELECT * FROM bookings WHERE service_staff_id=${req.params.id} `
-  req.query.search ? sql += `WHERE (client_name LIKE '%${req.query.search}%' OR client_email LIKE '%${req.query.search}%') `:null
+  req.query.search ? sql += `AND (client_name LIKE '%${req.query.search}%' OR client_email LIKE '%${req.query.search}%') `:null
 
   if (req.query.sort) {
     sql += `ORDER BY ${req.query.sort} DESC `
@@ -102,7 +102,7 @@ router.get('/barangay-staff/:id', protect, async (req, res) => {
   sort: string EX: (id || name)s
 */
   let sql = `SELECT * FROM bookings WHERE booked_by=${req.params.id} `
-  req.query.search ? sql += `WHERE (client_name LIKE '%${req.query.search}%' OR client_email LIKE '%${req.query.search}%') `:null
+  req.query.search ? sql += `AND (client_name LIKE '%${req.query.search}%' OR client_email LIKE '%${req.query.search}%') `:null
 
   if (req.query.sort) {
     sql += `ORDER BY ${req.query.sort} DESC `

@@ -125,7 +125,8 @@ router.put('/update-password', protect, async (req, res) => {
     } else {
       const updated_at = moment(Date.now()).format('YYYY-MM-DD');
 
-      let sql = `UPDATE users SET password="${newPassword}", updated_at="${updated_at}" WHERE id=${user.id}`
+      const Hpassword = bcrypt.hashSync(newPassword, salt)
+      let sql = `UPDATE users SET password="${Hpassword}", updated_at="${updated_at}" WHERE id=${user.id}`
       
       db.query(sql, (err, results, fields) => {
         if(err){
