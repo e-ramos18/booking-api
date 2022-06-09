@@ -84,52 +84,52 @@ router.post('/', protect, authorize('ADMIN'), async (req, res) => {
   } = req.body;
 
   if (barangayId && serviceId) {
-    return res.send({
+    res.status(400).json({
       status: "BAD REQUEST",
       message: "Cannot have both service_id and barangay_id."
-    }).status(400)
+    })
   }
 
   if (serviceId && role !== "SERVICE") {
-    return res.send({
+    res.status(400).json({
       status: "BAD REQUEST",
       message: "Should be role SERVICE."
-    }).status(400)
+    })
   }
 
   if (barangayId && role !== "BARANGAY") {
-    return res.send({
+    res.status(400).json({
       status: "BAD REQUEST",
       message: "Should be role BARANGAY."
-    }).status(400)
+    })
   }
 
   if (!barangayId && !serviceId && role !== "ADMIN") {
-    return res.send({
+    res.status(400).json({
       status: "BAD REQUEST",
       message: "Should be role ADMIN."
-    }).status(400)
+    })
   }
 
   if (barangayId && role === "BARANGAY" && (type === null || type !== "BARANGAY_STAFF")) {
-    return res.send({
+    res.status(400).json({
       status: "BAD REQUEST",
       message: "Should be type BARANGAY_STAFF."
-    }).status(400)
+    })
   }
 
   if (serviceId !== null && role === "SERVICE" && (type === null || type !== "SERVICE_STAFF")) {
-    return res.send({
+    res.status(400).json({
       status: "BAD REQUEST",
       message: "Should be type SERVICE_STAFF."
-    }).status(400)
+    })
   }
 
   if (barangayId === null && serviceId === null && role === "ADMIN" && type !== null) {
-    return res.send({
+    res.status(400).json({
       status: "BAD REQUEST",
       message: "Should be type null."
-    }).status(400)
+    })
   }
 
 
@@ -138,16 +138,16 @@ router.post('/', protect, authorize('ADMIN'), async (req, res) => {
 
   db.query('SELECT email from users WHERE email = ?', [email], async (err, result) => {
     if (err) {
-      return res.send({
+      res.status(400).json({
         status: "BAD REQUEST",
         message: "Should be type null."
-      }).status(400)
+      })
     }
     if (result[0]) {
-      return res.send({
+      res.status(400).json({
         status: "BAD REQUEST",
         message: "Email already is already registered."
-      }).status(400)
+      })
     }
     else {
       db.query(sql, (err, results, fields) => {
@@ -175,11 +175,11 @@ router.post('/', protect, authorize('ADMIN'), async (req, res) => {
                   data: result[0]
                 })
               } catch (err) {
-                return res.send({
+                return res.status(400).json({
                   status: "ERROR",
                   message: "Can't send an email.",
                   error: err
-                }).status(400)
+                })
               }
             }
           })
@@ -268,11 +268,11 @@ router.post('/reset-password/:id', protect, authorize('ADMIN'), async (req, res)
               data: result[0]
             })
           } catch (err) {
-            return res.send({
+            return res.status(400).json({
               status: "ERROR",
               message: "Can't send an email.",
               error: err
-            }).status(400)
+            })
           }
         }
       })

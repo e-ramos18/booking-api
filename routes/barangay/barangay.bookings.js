@@ -190,9 +190,16 @@ router.post('/', protect, authorize('BARANGAY'), async (req, res) => {
         if(error){
           res.send(error).status(400)
         } else {
-          res.status(201).json({
-            message: "SUCCESS",
-            data: result[0]
+          const updated_at = moment(Date.now()).format('YYYY-MM-DD HH:mm');
+          db.query(`UPDATE schedules SET is_available="${false}", updated_at="${updated_at}" WHERE id=${schedId}`, (errorSched, resultSched) => {
+            if(errorSched){
+              res.send(errorSched).status(400)
+            } else {
+              res.status(201).json({
+                message: "SUCCESS",
+                data: result[0]
+              })
+            }
           })
         }
       })
