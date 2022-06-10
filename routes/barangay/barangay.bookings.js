@@ -191,10 +191,30 @@ router.post('/', protect, authorize('BARANGAY'), async (req, res) => {
           res.send(error).status(400)
         } else {
           const updated_at = moment(Date.now()).format('YYYY-MM-DD HH:mm');
-          db.query(`UPDATE schedules SET is_available="${false}", updated_at="${updated_at}" WHERE id=${schedId}`, (errorSched, resultSched) => {
+          db.query(`UPDATE schedules SET is_available="${false}", updated_at="${updated_at}" WHERE id=${schedId}`, async (errorSched, resultSched) => {
             if(errorSched){
               res.send(errorSched).status(400)
             } else {
+              const message = `You are recieving this email because you have a schedule in ${process.env.SYSTEM_NAME}. \n\n Date: TBD \n Time: TBD`;
+
+              try {
+                await sendEmail({
+                  email: clientEmail,
+                  subject: `${process.env.SYSTEM_NAME} SCHEDULE`,
+                  message,
+                });
+            
+                return res.status(201).json({
+                  message: "SUCCESS",
+                  data: result[0]
+                })
+              } catch (err) {
+                return res.status(400).json({
+                  status: "ERROR",
+                  message: "Can't send an email.",
+                  error: err
+                })
+              }
               res.status(201).json({
                 message: "SUCCESS",
                 data: result[0]
